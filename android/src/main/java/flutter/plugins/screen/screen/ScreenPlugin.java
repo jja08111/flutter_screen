@@ -1,7 +1,9 @@
 package flutter.plugins.screen.screen;
 
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.view.WindowManager;
+import android.content.Context;
 
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -18,6 +20,7 @@ public class ScreenPlugin implements MethodCallHandler {
     this._registrar = registrar;
   }
   private Registrar _registrar;
+  private Context context;
 
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "github.com/clovisnicolas/flutter_screen");
@@ -26,6 +29,7 @@ public class ScreenPlugin implements MethodCallHandler {
 
   @Override
   public void onMethodCall(MethodCall call, Result result) {
+    context = _registrar.activity();
     switch(call.method){
       case "brightness":
         result.success(getBrightness());
@@ -53,6 +57,10 @@ public class ScreenPlugin implements MethodCallHandler {
         }
         result.success(null);
         break;
+      case "turnOffScreen":
+        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "tag");
+        wakeLock.release();
 
       default:
         result.notImplemented();
